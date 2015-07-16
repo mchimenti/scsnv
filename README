@@ -1,0 +1,4 @@
+Python scripts for exploratory data analysis and preprocessing of the scSNV database of splice-altering SNVs. 
+
+See the paper: Jian X, Boerwinkle E and Liu X. 2014. In silico prediction of splice-altering single nucleotide 
+variants in the human genome. Nucleic Acids Research 42(22):13534-13544.
