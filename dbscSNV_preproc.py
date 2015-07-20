@@ -105,11 +105,18 @@ def comp_ada_rf_scores(chrom_db):
     chrom_db['splice_alt'] = splice_alt
     return chrom_db
     
-def format_flat_file_dbscSNV(chrom_final):
+def format_flat_file_dbscSNV(chrom_preformat):
+    
+    chrom_final = comp_ada_rf_scores(chrom_preformat)  #add the 'splice_alt' summary score column
+    
+    ####
+    ####  below: formatting manipulations of the dataframe to get into form for merge into VCF file
+    ####  final format: "chr#  startpos  endpos  info_field"
+    ####
     
     chrom_final["hg19_pos_end"] = chrom_final["hg19_pos"]
     
-    chrom_final["info"] = chrom_final.apply(lambda r: 
+    chrom_final["info"] = chrom_final.apply(lambda r:    #info field will look like: G>A_exonic_splicescore_0"
         (r["ref"] + ">"+ r["alt"] + "_" + r["RefSeq_region"] + "_splicescore_" + str(r["splice_alt"])), axis=1)
 
     chrom_final["chr"] = "chr" + str(chrom_final.chr[1])
@@ -121,8 +128,8 @@ def format_flat_file_dbscSNV(chrom_final):
 def write_flat_file_dbscSNV(chrom_final_format, chrom_num):
     """write out a complete flat file in VCF format of the filtered and processed 
     dbscSNV database at exome capture regions only"""
-    return chrom_final_format.head()
-    #chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False)
+    #print chrom_final_format.head()
+    chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False)
     
 
 def main():
@@ -130,13 +137,13 @@ def main():
     exomes_dict = import_exome_capture_bed()  #dict with key:chromosome, value:dataframe of BED regions for EXome capture
     assert snv_dict.keys() == exomes_dict.keys()  #keys should match: chrom 1-22 and X and Y
     
-    snv_list = []   # list to collect the filtered chromosome SNV dataframes
+    snv_list = []   #list to collect the filtered chromosome SNV dataframes
     
     for i in snv_dict:
         snv_list.append(filter_scsnv_by_exome_list(snv_dict[str(i)], exomes_dict[str(i)]))
         
-    #for i in range(len(snv_list)):
-    #    write_flat_file_dbscSNV(format_flat_file_dbscSNV(snv_list[i]), snv_list[i].chr[1])
+    for i in range(len(snv_list)):
+        write_flat_file_dbscSNV(format_flat_file_dbscSNV(snv_list[i]), snv_list[i].chr[1])
 
 if __name__ == '__main__':
     
