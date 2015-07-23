@@ -13,27 +13,27 @@ def clean_import_scsnv():
     cols = [0,1,2,3,8,16,17]
     col_names = ['chr', 'hg19_pos', 'ref', 'alt', 'RefSeq_region', 'ada_score', 'rf_score']
 
-    for i in range(2):
-        if i > 0:
-            chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0)
-                
-    chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0))
-                
-    chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0))
-                
-    #for i in range(23):
+    #for i in range(2):
     #    if i > 0:
     #        chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000)
+    #            na_values = '.', usecols=cols, names=col_names, header=0)
     #            
     #chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+    #            na_values = '.', usecols=cols, names=col_names, header=0))
     #            
     #chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+    #            na_values = '.', usecols=cols, names=col_names, header=0))
+                
+    for i in range(23):
+        if i > 0:
+            chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
+                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000)
+                
+    chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
+                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+                
+    chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
+                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
     
     return chrom_dict  
     
@@ -92,8 +92,8 @@ def comp_ada_rf_scores(chrom_db):
     """compare the ada_score and rf_score to a threshold. Use a logical OR to indicate
     if value is above threshold for one or both scores. Add new column to database"""
     
-    ada_score_true = chrom_db['ada_score'] >= 0.8     #these values are chosen somewhat arbitrarily and 
-    rf_score_true = chrom_db['rf_score'] >= 0.65      #can change to reflect our experience with the variant calling workflow
+    ada_score_true = chrom_db['ada_score'] >= 0.6     #these values are chosen somewhat arbitrarily and 
+    rf_score_true = chrom_db['rf_score'] >= 0.5      #can change to reflect our experience with the variant calling workflow
     
     splice_alt = []
     
@@ -103,6 +103,10 @@ def comp_ada_rf_scores(chrom_db):
         else: splice_alt.append(0)
         
     chrom_db['splice_alt'] = splice_alt
+    
+    chrom_db = chrom_db[chrom_db.splice_alt == 1]  #drop rows that calculate to zero
+    chrom_db = chrom_db.reset_index(drop=True)     #reset index again after dropping rows
+    
     return chrom_db
     
 def format_flat_file_dbscSNV(chrom_preformat):
@@ -113,8 +117,7 @@ def format_flat_file_dbscSNV(chrom_preformat):
     
     chrom_final["hg19_pos_end"] = chrom_final["hg19_pos"]
     
-    chrom_final["info"] = chrom_final.apply(lambda r:    #info field will look like: G>A_0"
-        (r["ref"] + ">"+ r["alt"] + "_" + str(r["splice_alt"])), axis=1)
+    chrom_final["info"] = chrom_final.apply(lambda r: (r["ref"] + "->"+ r["alt"]), axis=1) #create info field with ref>alt
 
     chrom_final["chr"] = "chr" + str(chrom_final.chr[1])
     
@@ -125,8 +128,8 @@ def format_flat_file_dbscSNV(chrom_preformat):
 def write_flat_file_dbscSNV(chrom_final_format, chrom_num):
     """write out a complete flat file in VCF format of the filtered and processed 
     dbscSNV database at exome capture regions only"""
-    #print chrom_final_format.head()
-    chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False, header=False)
+    print chrom_final_format.head(n=25)
+    #chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False, header=False)
     
 
 def main():
@@ -144,5 +147,5 @@ def main():
 
 if __name__ == '__main__':
     
-    #main()
-    pass    
+    main()
+    #pass    
