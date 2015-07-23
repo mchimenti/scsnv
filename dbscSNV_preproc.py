@@ -13,27 +13,27 @@ def clean_import_scsnv():
     cols = [0,1,2,3,8,16,17]
     col_names = ['chr', 'hg19_pos', 'ref', 'alt', 'RefSeq_region', 'ada_score', 'rf_score']
 
-    #for i in range(2):
-    #    if i > 0:
-    #        chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0)
-    #            
-    #chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0))
-    #            
-    #chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
-    #            na_values = '.', usecols=cols, names=col_names, header=0))
-                
     for i in range(23):
         if i > 0:
             chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000)
+                na_values = '.', usecols=cols, names=col_names, header=0)
                 
     chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+                na_values = '.', usecols=cols, names=col_names, header=0))
                 
     chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
-                na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+                na_values = '.', usecols=cols, names=col_names, header=0))
+                
+    #for i in range(23):
+    #    if i > 0:
+    #        chrom_dict[str(i)]  = pd.read_table('dbscSNV1.1.chr'+str(i), sep = '\t', 
+    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000)
+    #            
+    #chrom_dict.setdefault('X', pd.read_table('dbscSNV1.1.chrX', sep = '\t', 
+    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
+    #            
+    #chrom_dict.setdefault('Y', pd.read_table('dbscSNV1.1.chrY', sep = '\t', 
+    #            na_values = '.', usecols=cols, names=col_names, header=0, nrows=10000))
     
     return chrom_dict  
     
@@ -117,7 +117,7 @@ def format_flat_file_dbscSNV(chrom_preformat):
     
     chrom_final["hg19_pos_end"] = chrom_final["hg19_pos"]
     
-    chrom_final["info"] = chrom_final.apply(lambda r: (r["ref"] + "->"+ r["alt"]), axis=1) #create info field with ref>alt
+    chrom_final["info"] = chrom_final.apply(lambda r: (r["ref"] + "->"+ r["alt"]), axis=1) #create info field with ref->alt
 
     chrom_final["chr"] = "chr" + str(chrom_final.chr[1])
     
@@ -128,8 +128,8 @@ def format_flat_file_dbscSNV(chrom_preformat):
 def write_flat_file_dbscSNV(chrom_final_format, chrom_num):
     """write out a complete flat file in VCF format of the filtered and processed 
     dbscSNV database at exome capture regions only"""
-    print chrom_final_format.head(n=25)
-    #chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False, header=False)
+    #print chrom_final_format.head(n=25)
+    chrom_final_format.to_csv("dbscSNV_proc_"+str(chrom_num)+".txt", sep='\t', index=False, header=False)
     
 
 def main():
